@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as SecureStore from 'expo-secure-store';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -43,13 +44,23 @@ export default function LoginScreen() {
   };
 
   // 3. AÇÃO DO BOTÃO
-  const lidarComLogin = () => {
+  const lidarComLogin = async () => {
     if (validarFormulario()) {
-      // Se a validação passou, mostramos um alerta e navegamos
-      Alert.alert('Sucesso', 'Login realizado com sucesso!');
-      
-      // router.replace() troca a tela e não deixa o usuário voltar pro Login clicando em "Voltar"
-      router.replace('/(tabs)'); 
+      try {
+        // Vai no cofre do celular e busca os dados salvos
+        const emailSalvo = await SecureStore.getItemAsync('userEmail');
+        const senhaSalva = await SecureStore.getItemAsync('userPassword');
+
+        // Compara o que o usuário digitou com o que está no banco criptografado
+        if (email.trim().toLowerCase() === emailSalvo && senha === senhaSalva) {
+          Alert.alert('Sucesso', 'Acesso Autorizado!');
+          router.replace('/(tabs)' as any); 
+        } else {
+          Alert.alert('Acesso Negado', 'E-mail ou senha incorretos. Tente novamente.');
+        }
+      } catch {
+        Alert.alert('Erro', 'Falha ao acessar o cofre de senhas do sistema.');
+      }
     }
   };
 

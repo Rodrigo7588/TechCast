@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert, ScrollView } from 'react-native';
 import { useRouter, Link } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 
 export default function CadastroScreen() {
   const router = useRouter();
@@ -42,11 +43,17 @@ export default function CadastroScreen() {
   };
 
   // 3. AÇÃO DO BOTÃO
-  const lidarComCadastro = () => {
+  const lidarComCadastro = async () => {
     if (validarCadastro()) {
-      Alert.alert('Sucesso', 'Conta criada com sucesso! Faça seu login.');
-      // Volta para a tela de login após cadastrar
-      router.replace('/login' as any); 
+      try {
+        await SecureStore.setItemAsync('userEmail', email.trim().toLowerCase());
+        await SecureStore.setItemAsync('userPassword', senha);
+        
+        Alert.alert('Sucesso', 'Conta criada e criptografada com sucesso! Faça seu login.');
+        router.replace('/login' as any); 
+      } catch {
+        Alert.alert('Erro', 'Não foi possível salvar os dados de forma segura.');
+      }
     }
   };
 

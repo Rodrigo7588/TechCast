@@ -1,51 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Alert, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Tipagem da nossa Anotação
+// 1. Tipagem da nossa Anotação (TypeScript)
 interface Anotacao {
   id: string;
   texto: string;
 }
 
 export default function AnotacoesScreen() {
-  // --- ESTADOS DO CRUD ---
-  // 1. O Array que guarda todas as anotações
+  // --- ESTADOS DO COMPONENTE ---
   const [anotacoes, setAnotacoes] = useState<Anotacao[]>([]);
-  // 2. O texto que está sendo digitado no input
   const [textoInput, setTextoInput] = useState('');
-  // 3. Estado para saber se estamos criando ou editando (guarda o ID de quem está sendo editado)
   const [idEditando, setIdEditando] = useState<string | null>(null);
+
+  // --- BANCO DE DADOS LOCAL (AsyncStorage) ---
+  
+  // Roda uma única vez quando a tela abre para carregar as notas salvas
+  useEffect(() => {
+    const carregarAnotacoes = async () => {
+      try {
+        const notasSalvas = await AsyncStorage.getItem('@techcast_notas');
+        if (notasSalvas) {
+          setAnotacoes(JSON.parse(notasSalvas)); // Transforma o texto de volta em Array
+        }
+      } catch (error) {
+        console.error('Erro ao carregar as notas do celular', error);
+      }
+    };
+    carregarAnotacoes();
+  }, []);
+
+  // Função auxiliar: Atualiza a tela E salva no banco ao mesmo tempo
+  const atualizarBancoDeDados = async (novasAnotacoes: Anotacao[]) => {
+    setAnotacoes(novasAnotacoes); // Atualiza o visual
+    try {
+      // Transforma o Array em texto (String) para salvar no celular
+      await AsyncStorage.setItem('@techcast_notas', JSON.stringify(novasAnotacoes)); 
+    } catch (error) {
+      console.error('Erro ao salvar as notas no celular', error);
+    }
+  };
 
   // --- FUNÇÕES DO CRUD ---
 
-  // CREATE (Criar) e UPDATE (Atualizar)
+  // CREATE e UPDATE (Criar ou Atualizar)
   const salvarAnotacao = () => {
     if (textoInput.trim() === '') {
       Alert.alert('Erro', 'A anotação não pode estar vazia.');
       return;
     }
 
+    let novaLista: Anotacao[];
+
     if (idEditando) {
-      // UPDATE: Se tem um ID editando, a gente atualiza a lista
-      setAnotacoes(anotacoes.map(item => 
+      // UPDATE: Atualiza o texto da anotação que tem o mesmo ID
+      novaLista = anotacoes.map(item => 
         item.id === idEditando ? { ...item, texto: textoInput } : item
-      ));
+      );
       setIdEditando(null); // Sai do modo de edição
     } else {
-      // CREATE: Se não tem ID, a gente cria uma nova
+      // CREATE: Cria uma anotação nova e coloca no topo
       const novaAnotacao: Anotacao = {
-        id: Date.now().toString(), // Gera um ID único baseado na data
+        id: Date.now().toString(), // ID único baseado no tempo
         texto: textoInput,
       };
-      // Coloca a nova anotação no topo da lista
-      setAnotacoes([novaAnotacao, ...anotacoes]);
+      novaLista = [novaAnotacao, ...anotacoes];
     }
 
-    setTextoInput(''); // Limpa o campo de texto
+    atualizarBancoDeDados(novaLista); // Salva a lista nova no celular
+    setTextoInput(''); // Limpa a caixa de texto
   };
 
-  // READ (Ler - Preparar para edição)
+  // READ (Preparar para edição)
   const iniciarEdicao = (anotacao: Anotacao) => {
     setTextoInput(anotacao.texto);
     setIdEditando(anotacao.id);
@@ -62,9 +90,11 @@ export default function AnotacoesScreen() {
           text: 'Apagar', 
           style: 'destructive', 
           onPress: () => {
-            // Filtra a lista, removendo o item com o ID passado
-            setAnotacoes(anotacoes.filter(item => item.id !== id));
-            // Se o usuário apagar a anotação que ele estava editando, limpa o input
+            // Filtra a lista removendo o ID selecionado
+            const novaLista = anotacoes.filter(item => item.id !== id);
+            atualizarBancoDeDados(novaLista); // Salva a lista nova no celular
+            
+            // Se apagou a nota que estava editando, limpa o input
             if (idEditando === id) {
               setTextoInput('');
               setIdEditando(null);
@@ -75,12 +105,11 @@ export default function AnotacoesScreen() {
     );
   };
 
-  // --- RENDERIZAÇÃO DA TELA ---
+  // --- RENDERIZAÇÃO DA LISTA ---
   const renderItem = ({ item }: { item: Anotacao }) => (
     <View style={styles.cardAnotacao}>
       <Text style={styles.textoAnotacao}>{item.texto}</Text>
       
-      {/* Botões de Ação */}
       <View style={styles.acoesContainer}>
         <TouchableOpacity 
           style={styles.botaoAcao} 
@@ -105,7 +134,7 @@ export default function AnotacoesScreen() {
     <SafeAreaView style={styles.container}>
       <Text style={styles.h1} accessibilityRole="header">Minhas Anotações</Text>
       
-      {/* Área de Input (Formulário) */}
+      {/* Formulário de Criação/Edição */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -113,7 +142,7 @@ export default function AnotacoesScreen() {
           placeholderTextColor="#B3B3B3"
           value={textoInput}
           onChangeText={setTextoInput}
-          multiline // Permite texto longo (várias linhas)
+          multiline
         />
         <TouchableOpacity style={styles.botaoSalvar} onPress={salvarAnotacao}>
           <Text style={styles.textoBotaoSalvar}>
@@ -122,7 +151,7 @@ export default function AnotacoesScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* READ: A Lista que exibe os dados */}
+      {/* Exibição da Lista */}
       {anotacoes.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Nenhuma anotação ainda.</Text>
@@ -165,7 +194,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3B82F6',
     minHeight: 80,
-    textAlignVertical: 'top', // Para o texto começar em cima no Android
+    textAlignVertical: 'top',
   },
   botaoSalvar: {
     backgroundColor: '#3B82F6',
