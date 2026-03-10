@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 
 export default function Index() {
-  // Isso força o aplicativo a jogar o usuário direto para a tela de login ao abrir
+  // O "as any" força o TypeScript a aceitar a rota sem reclamar
   return <Redirect href={"/(auth)/login" as any} />;
 }
