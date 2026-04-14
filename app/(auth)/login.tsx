@@ -7,14 +7,14 @@ import * as SecureStore from 'expo-secure-store';
 export default function LoginScreen() {
   const router = useRouter();
 
-  // 1. ESTADOS (Memória do componente)
+  // 1. ESTADOS
   // Guardam o que o usuário digita e as mensagens de erro
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erroEmail, setErroEmail] = useState('');
   const [erroSenha, setErroSenha] = useState('');
 
-  // 2. FUNÇÃO DE VALIDAÇÃO (Requisito da avaliação)
+  // 2. FUNÇÃO DE VALIDAÇÃO
   const validarFormulario = () => {
     let valido = true;
     

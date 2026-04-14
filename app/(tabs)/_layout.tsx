@@ -13,48 +13,33 @@ export default function TabLayout() {
         headerTitleAlign: 'center',
       }}
     >
-      {/* 1. Home / Episódios */}
       <Tabs.Screen 
         name="index" 
-        options={{ 
-          title: 'Início', 
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} /> 
-        }} 
+        options={{ title: 'Início', tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} /> }} 
       />
-
-      {/* 2. Explorar (Busca/Categorias) */}
       <Tabs.Screen 
         name="explore" 
-        options={{ 
-          title: 'Explorar', 
-          tabBarIcon: ({ color }) => <Ionicons name="search" size={24} color={color} /> 
-        }} 
+        options={{ title: 'Explorar', tabBarIcon: ({ color }) => <Ionicons name="search" size={24} color={color} /> }} 
       />
-      
-      {/* 3. Anotações (Onde faremos o CRUD) */}
       <Tabs.Screen 
         name="anotacoes" 
-        options={{ 
-          title: 'Anotações', 
-          tabBarIcon: ({ color }) => <Ionicons name="document-text" size={24} color={color} /> 
-        }} 
+        options={{ title: 'Anotações', tabBarIcon: ({ color }) => <Ionicons name="document-text" size={24} color={color} /> }} 
       />
-
-      {/* 4. Favoritos */}
       <Tabs.Screen 
         name="favorito" 
-        options={{ 
-          title: 'Favoritos', 
-          tabBarIcon: ({ color }) => <Ionicons name="heart" size={24} color={color} /> 
-        }} 
+        options={{ title: 'Favoritos', tabBarIcon: ({ color }) => <Ionicons name="heart" size={24} color={color} /> }} 
       />
-
-      {/* 5. Perfil / Configurações */}
       <Tabs.Screen 
         name="perfil" 
+        options={{ title: 'Perfil', tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} /> }} 
+      />
+      
+      {/* --- A SUA NOVA TELA AQUI --- */}
+      <Tabs.Screen 
+        name="sobre" 
         options={{ 
-          title: 'Perfil', 
-          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} /> 
+          title: 'Sobre', 
+          tabBarIcon: ({ color }) => <Ionicons name="information-circle" size={24} color={color} /> 
         }} 
       />
     </Tabs>

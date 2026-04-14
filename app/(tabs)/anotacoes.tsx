@@ -3,7 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Alert, S
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// 1. Tipagem da nossa Anotação (TypeScript)
 interface Anotacao {
   id: string;
   texto: string;

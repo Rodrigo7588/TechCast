@@ -1,150 +1,53 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, SafeAreaView, StatusBar, Pressable, TextInput } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-// 1. NOVO MODELO DE DADOS (Conforme sua documentação)
-interface Episodio {
-  id: string;
-  titulo: string;
-  descricao: string;
-  duracao: string;
-  videoUrl: string; // Adicionado
-  audioUrl: string; // Adicionado
-}
-
-// Dados simulados atualizados
-const DADOS_EPISODIOS: Episodio[] = [
-  { 
-    id: '1', 
-    titulo: 'Acessibilidade na Web e Mobile', 
-    descricao: 'Como aplicar WCAG 2.2 em projetos React Native.', 
-    duracao: '15 min',
-    videoUrl: 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
-    audioUrl: ''
-  },
-  { 
-    id: '2', 
-    titulo: 'Clean Code na Prática', 
-    descricao: 'Escrevendo código que humanos entendem.', 
-    duracao: '22 min',
-    videoUrl: '',
-    audioUrl: ''
-  },
+const EPISODIOS = [
+  { id: '1', titulo: 'O Futuro do React Native', duracao: '45 min', imagem: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=400&auto=format&fit=crop' },
+  { id: '2', titulo: 'Clean Code na Prática', duracao: '32 min', imagem: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=400&auto=format&fit=crop' },
+  { id: '3', titulo: 'Introdução a Banco de Dados', duracao: '50 min', imagem: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?q=80&w=400&auto=format&fit=crop' },
+  { id: '4', titulo: 'Acessibilidade (WCAG 2.2)', duracao: '28 min', imagem: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=400&auto=format&fit=crop' },
 ];
 
 export default function HomeScreen() {
 
-  const renderizarItem = ({ item }: { item: Episodio }) => (
-    <Link href={{ pathname: "/episodio/[id]", params: { id: item.id } }} asChild>
-      <Pressable 
-        style={({ pressed }) => [
-          styles.card, 
-          pressed && styles.cardPressionado
-        ]}
-        // Acessibilidade: Leitores de tela vão ler isso ao focar no card
-        accessibilityRole="button"
-        accessibilityLabel={`Episódio: ${item.titulo}. Duração: ${item.duracao}.`}
-      >
-        <View style={styles.cardHeader}>
-          {/* Acessibilidade: Hierarquia de texto simulada */}
-          <Text style={styles.titulo} accessibilityRole="header">{item.titulo}</Text>
-          <Text style={styles.duracao}>{item.duracao}</Text>
+  const renderizarEpisodio = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.card} activeOpacity={0.7}>
+      <Image source={{ uri: item.imagem }} style={styles.imagemCard} />
+      <View style={styles.infoCard}>
+        <Text style={styles.tituloEpisodio}>{item.titulo}</Text>
+        <View style={styles.duracaoContainer}>
+          <Ionicons name="time-outline" size={16} color="#B3B3B3" />
+          <Text style={styles.textoDuracao}>{item.duracao}</Text>
         </View>
-        <Text style={styles.descricao}>{item.descricao}</Text>
-      </Pressable>
-    </Link>
+      </View>
+      <Ionicons name="play-circle" size={40} color="#3B82F6" />
+    </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <Text style={styles.h1}>Novos Episódios</Text>
       
-      {/* Título da Aplicação (H1) */}
-      <Text style={styles.h1} accessibilityRole="header">TechCast</Text>
-
-      {/* Campo de Busca (Requisito da Tela 1) */}
-      <View style={styles.buscaContainer}>
-        <TextInput 
-          style={styles.inputBusca}
-          placeholder="Buscar episódios..."
-          placeholderTextColor="#B3B3B3"
-          accessibilityLabel="Campo de busca de episódios"
-        />
-      </View>
-
+      {/* O requisito de ouro do professor: FlatList */}
       <FlatList
-        data={DADOS_EPISODIOS}
-        renderItem={renderizarItem}
+        data={EPISODIOS}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.listaContent}
+        renderItem={renderizarEpisodio}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
       />
     </SafeAreaView>
   );
 }
 
-// 2. DESIGN SYSTEM (Cores da sua documentação)
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0D0D0D', // Fundo Principal doc
-    paddingTop: 40,
-  },
-  h1: {
-    fontSize: 32, // H1 doc
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 20,
-    paddingHorizontal: 16,
-  },
-  buscaContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 20,
-  },
-  inputBusca: {
-    backgroundColor: '#1C1C1C',
-    color: '#FFFFFF',
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#3B82F6', // Cor de destaque doc
-  },
-  listaContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  card: {
-    backgroundColor: '#1C1C1C', // Card doc
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#3B82F6', // Cor de destaque doc
-  },
-  cardPressionado: {
-    opacity: 0.7,
-    transform: [{ scale: 0.98 }]
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  titulo: {
-    color: '#FFFFFF', // Texto Principal doc
-    fontSize: 16, // Usando o tamanho de texto padrão como base para card
-    fontWeight: '600',
-    flex: 1,
-    marginRight: 10,
-  },
-  duracao: {
-    color: '#3B82F6', // Destacando a duração com a cor primária
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  descricao: {
-    color: '#E5E5E5', // Texto secundário doc
-    fontSize: 14,
-    lineHeight: 20,
-  },
+  container: { flex: 1, backgroundColor: '#0D0D0D', paddingHorizontal: 16 },
+  h1: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', marginVertical: 20 },
+  card: { flexDirection: 'row', backgroundColor: '#1C1C1C', borderRadius: 12, padding: 12, marginBottom: 16, alignItems: 'center' },
+  imagemCard: { width: 70, height: 70, borderRadius: 8, marginRight: 12 },
+  infoCard: { flex: 1 },
+  tituloEpisodio: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', marginBottom: 6 },
+  duracaoContainer: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  textoDuracao: { color: '#B3B3B3', fontSize: 14 }
 });
