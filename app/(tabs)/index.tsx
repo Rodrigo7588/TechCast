@@ -1,35 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 
 const EPISODIOS = [
-  { id: '1', titulo: 'O Futuro do React Native', duracao: '45 min', imagem: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=400&auto=format&fit=crop' },
-  { id: '2', titulo: 'Clean Code na Prática', duracao: '32 min', imagem: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=400&auto=format&fit=crop' },
-  { id: '3', titulo: 'Introdução a Banco de Dados', duracao: '50 min', imagem: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?q=80&w=400&auto=format&fit=crop' },
-  { id: '4', titulo: 'Acessibilidade (WCAG 2.2)', duracao: '28 min', imagem: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=400&auto=format&fit=crop' },
+  { id: '1', titulo: 'O Futuro do React Native', duracao: '10 min', imagem: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=400&auto=format&fit=crop', videoUrl: 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' },
+  { id: '2', titulo: 'Clean Code na Prática', duracao: '10 min', imagem: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=400&auto=format&fit=crop', videoUrl: 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' },
 ];
 
 export default function HomeScreen() {
+  // Guarda o ID do vídeo que está tocando no momento
+  const [videoAtivo, setVideoAtivo] = useState<string | null>(null);
 
-  const renderizarEpisodio = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.card} activeOpacity={0.7}>
-      <Image source={{ uri: item.imagem }} style={styles.imagemCard} />
-      <View style={styles.infoCard}>
-        <Text style={styles.tituloEpisodio}>{item.titulo}</Text>
-        <View style={styles.duracaoContainer}>
-          <Ionicons name="time-outline" size={16} color="#B3B3B3" />
-          <Text style={styles.textoDuracao}>{item.duracao}</Text>
+  const renderizarEpisodio = ({ item }: { item: any }) => {
+    // Se o usuário clicou no play, renderiza o Player de Vídeo em vez do card
+    if (videoAtivo === item.id) {
+      return (
+        <View style={styles.videoContainer}>
+          <Video
+            source={{ uri: item.videoUrl }}
+            style={styles.player}
+            useNativeControls
+            resizeMode={ResizeMode.CONTAIN}
+            shouldPlay // Faz o vídeo começar sozinho
+          />
+          <TouchableOpacity style={styles.botaoFecharVideo} onPress={() => setVideoAtivo(null)}>
+            <Text style={styles.textoFecharVideo}>Fechar Vídeo</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-      <Ionicons name="play-circle" size={40} color="#3B82F6" />
-    </TouchableOpacity>
-  );
+      );
+    }
+
+    // Se não clicou no play, mostra o card normal
+    return (
+      <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={() => setVideoAtivo(item.id)}>
+        <Image source={{ uri: item.imagem }} style={styles.imagemCard} />
+        <View style={styles.infoCard}>
+          <Text style={styles.tituloEpisodio}>{item.titulo}</Text>
+          <View style={styles.duracaoContainer}>
+            <Ionicons name="time-outline" size={16} color="#B3B3B3" />
+            <Text style={styles.textoDuracao}>{item.duracao}</Text>
+          </View>
+        </View>
+        <Ionicons name="play-circle" size={40} color="#3B82F6" />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.h1}>Novos Episódios</Text>
       
-      {/* O requisito de ouro do professor: FlatList */}
       <FlatList
         data={EPISODIOS}
         keyExtractor={item => item.id}
@@ -49,5 +70,11 @@ const styles = StyleSheet.create({
   infoCard: { flex: 1 },
   tituloEpisodio: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', marginBottom: 6 },
   duracaoContainer: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  textoDuracao: { color: '#B3B3B3', fontSize: 14 }
+  textoDuracao: { color: '#B3B3B3', fontSize: 14 },
+  
+  // Estilos novos para o Player de Vídeo
+  videoContainer: { backgroundColor: '#1C1C1C', borderRadius: 12, overflow: 'hidden', marginBottom: 16 },
+  player: { width: '100%', height: 200 },
+  botaoFecharVideo: { backgroundColor: '#FF4C4C', padding: 10, alignItems: 'center' },
+  textoFecharVideo: { color: '#FFFFFF', fontWeight: 'bold' }
 });
